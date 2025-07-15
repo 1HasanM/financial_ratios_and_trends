@@ -13,7 +13,6 @@ tickers = ["AKBNK.IS", "SISE.IS", "THYAO.IS", "BIMAS.IS", "ASELS.IS"]
 # 2. Ticker nesneleri
 companies = {t: yf.Ticker(t) for t in tickers}
 
-# 3. Temel verileri çek
 data = []
 for t, ticker in companies.items():
     info = ticker.info
