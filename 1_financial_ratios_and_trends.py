@@ -1,6 +1,5 @@
 import yfinance as yf
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -13,6 +12,7 @@ tickers = ["AKBNK.IS", "SISE.IS", "THYAO.IS", "BIMAS.IS", "ASELS.IS"]
 # 2. Ticker nesneleri
 companies = {t: yf.Ticker(t) for t in tickers}
 
+# 3. Finansal oranlar
 data = []
 for t, ticker in companies.items():
     info = ticker.info
@@ -25,27 +25,38 @@ for t, ticker in companies.items():
     })
 
 df = pd.DataFrame(data).dropna()
+
+# Equity / Market Cap oranı
 df["Equity"] = df["Book_Value"] * df["Shares_Outstanding"]
 df["Equity_to_MCap"] = df["Equity"] / df["Market_Cap"]
 
-print("🔹 Güncel Finansal Veriler:")
-print(df[["Ticker", "Market_Cap", "Trailing_PE", "Equity_to_MCap"]])
+print("🔹 Finansal Oran Karşılaştırması")
+print(df[["Ticker", "Trailing_PE", "Equity_to_MCap"]])
 
-# 4. Fiyat verisi
+# =========================
+# GRAFİKLER
+# =========================
+
+# Trailing P/E karşılaştırması
+plt.bar(df["Ticker"], df["Trailing_PE"])
+plt.title("Trailing P/E Karşılaştırması")
+plt.ylabel("F/K Oranı")
+plt.tight_layout()
+plt.show()
+
+# Equity / Market Cap karşılaştırması
+plt.bar(df["Ticker"], df["Equity_to_MCap"])
+plt.title("Equity / Market Cap Oranı")
+plt.ylabel("Oran")
+plt.tight_layout()
+plt.show()
+
+# =========================
+# FİYAT TRENDİ
+# =========================
+
 prices = yf.download(tickers, start="2024-07-01", end="2025-07-01")["Close"]
 prices.plot(title="1 Yıllık Hisse Fiyat Trendi")
 plt.ylabel("Fiyat (TL)")
-plt.show()
-
-# 5. Tahmini F/K analizi (aylık)
-pe_trends = pd.DataFrame()
-for ticker in tickers:
-    hist = companies[ticker].history(period="1y", interval="1mo")
-    equity = df.loc[df["Ticker"] == ticker, "Equity"].values[0]
-    shares = df.loc[df["Ticker"] == ticker, "Shares_Outstanding"].values[0]
-    eps = equity / shares
-    pe_trends[ticker] = hist["Close"] / eps
-
-pe_trends.plot(title="Tahmini F/K Trend Grafiği (Ay Bazında)")
-plt.ylabel("F/K Tahmini")
+plt.tight_layout()
 plt.show()
